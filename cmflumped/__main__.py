@@ -17,17 +17,16 @@ def get_commands():
     }
 
 
-def main():
+def main(args=sys.argv):
 
     commands = get_commands()
-    if len(sys.argv) > 1 and sys.argv[1] in commands:
+    if len(args) > 1 and sys.argv[1] in commands:
         f = commands[sys.argv[1]]
-        if len(sys.argv) == 2 or sys.argv[2] == 'help':
+        if len(args) == 2 or sys.argv[2] == 'help':
             sys.stderr.write(f.__doc__)
         else:
-            args = sys.argv[2:]
-            f(*args)
-    elif len(sys.argv) > 1 and sys.argv[1]=='help':
+            f(*args[2:])
+    elif len(args) > 1 and args[1] == 'help':
         print('Runs a custom build lumped cmf model')
         for n, f in commands.items():
             print()

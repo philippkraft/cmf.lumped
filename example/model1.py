@@ -9,7 +9,9 @@ class Parameters(BaseParameters):
 
     Create class owned fields as parameters
     """
-    infiltration_capacity = u(0, 20, 10, 'Dokumentation...')
+    infiltration_capacity = u(
+        0, 50, 10,
+        doc='Infiltration capacity over a day in mm/day')
     infiltration_w0 = u(
         0.5, 0.99, default=0.75,
         doc=':math:`W_0` saturation index'
@@ -22,12 +24,16 @@ class Parameters(BaseParameters):
         0.1, 0.9, default=0.5,
         doc='Fraction of soil capacity where ET starts to be limited'
     )
+    retention_time = u(
+        1, 150, default=10,
+        doc='Retention time in the catchment water storage'
+    )
 
 
 class Model1(BaseModel):
     """
-    A simple Lumped model with snow, soil storage and groundwater
-
+    A simple Lumped model with a single storage, infiltration and
+    saturation excess and a linear discharge
     """
     verbose = True
     calibration_start = 2000
@@ -37,7 +43,7 @@ class Model1(BaseModel):
     def __init__(self):
         path = os.path.dirname(__file__)
         data = load_csv(f'{path}/glauburg_temp.csv', time_column=0, P=2, E=1, T=3, Q=1)
-        super().__init__( data)
+        super().__init__(data)
 
     def create_nodes(self):
         """

@@ -60,6 +60,8 @@ class DataProvider:
 
 def load_csv(csv_file: str, time_column=0, **columnmapper):
     """
+    Loads driver and calibration
+
     :param csv_file: The csv file with decimal point and commas as list seperator
     :param columnmapper: Maps the column names or positions to the items P, E, T, Q
     :return: A DataProvider object
