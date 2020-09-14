@@ -3,6 +3,7 @@ import cmf
 from cmflumped.basemodel import BaseParameters, u, BaseModel
 from cmflumped.dataprovider import load_csv
 
+
 class Parameters(BaseParameters):
     """
     A helper class to define the parameters of the model
@@ -41,7 +42,7 @@ class Model1(BaseModel):
     parameters = Parameters()
 
     def __init__(self):
-        path = os.path.dirname(__file__)
+        path = os.path.dirname(__file__) or '.'
         data = load_csv(f'{path}/glauburg_temp.csv', time_column=0, P=2, E=1, T=3, Q=1)
         super().__init__(data)
 
@@ -66,8 +67,7 @@ class Model1(BaseModel):
         if self.verbose:
             print(f'{t!s:>12s} Q={q:10.5g}mm/day')
 
-
-    def set_soil_capacity(self, p: Parameters):
+    def set_soil_capacity(self, p: Parameters)->float:
         """
         Sets the upper soil capacity
         """
@@ -88,7 +88,7 @@ class Model1(BaseModel):
         # Route infiltration / saturation excess to outlet
         cmf.waterbalance_connection(self.cell.surfacewater, self.outlet)
 
-        C = self.set_soil_capacity(p)
+        capacity = self.set_soil_capacity(p)
 
         cmf.timeseriesETpot(self.soil, self.cell.transpiration, self.data.ETpot)
         # Parameterize water stress function
@@ -96,7 +96,7 @@ class Model1(BaseModel):
         self.soil.soil.Ksat = p.infiltration_capacity / 1000
 
         self.cell.set_uptakestress(cmf.VolumeStress(
-            p.ETV1 * C, 0.1 * C)
+            p.ETV1 * capacity, 0.1 * capacity)
         )
 
     def initial_values(self, p: Parameters = None):
@@ -110,3 +110,11 @@ class Model1(BaseModel):
         """
         return self.outlet.waterbalance(t)
 
+
+if __name__ == '__main__':
+    from cmflumped.commands import gui
+    import logging
+    logger = logging.getLogger(__file__)
+    logging.basicConfig(level=logging.DEBUG)
+    print(__file__)
+    gui(__file__)
