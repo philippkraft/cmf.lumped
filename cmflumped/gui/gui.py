@@ -7,10 +7,11 @@ import time
 from spotpy.parameter import get_parameters_array, create_set
 from ..basemodel import BaseModel
 import cmf
+import logging
 
 from .fluxogram import Fluxogram
 
-
+logger = logging.getLogger(__name__)
 class GUI:
 
     def __init__(self, setup):
@@ -19,6 +20,8 @@ class GUI:
 
         :param setup: A spotpy setup
         """
+
+        logger.debug('init gui')
         self.fig = plt.figure(type(setup).__name__)
         self.time_ax = plt.axes([0.05, 0.1, 0.9, 0.4])
 
@@ -44,6 +47,7 @@ class GUI:
         plt.close(self.fig)
 
     def __enter__(self):
+        logger.debug('enter gui context')
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -106,13 +110,16 @@ class GUI:
         """
         Runs the model and plots the result
         """
+        logger.info('silent run')
         self.running = False
         self.time_ax.set_title('Calculating...')
         plt.draw()
         time.sleep(0.001)
 
         parset = create_set(self.setup, **self.parameter_values)
+        logger.debug('start simulation')
         sim = np.array(self.setup.simulation(parset))
+        logger.debug('simulation done')
         objf = as_scalar(self.setup.objectivefunction(sim, self.setup.evaluation()))
         day = np.timedelta64(1, 'D')
         begin = np.datetime64(self.setup.begin)
@@ -121,11 +128,14 @@ class GUI:
         self.time_ax.legend()
         self.time_ax.set_title(type(self.setup).__name__)
         self.time_ax.figure.canvas.draw_idle()
+        logger.debug('plot result')
 
     def stop(self, _=None):
+        logger.info('pressed stop')
         self.running = False
 
     def animate(self, _=None):
+        logger.info('animation')
         self.running = False
         def cmf_time_to_ms(t):
             return (t - cmf.Time(1, 1, 1970)).AsMilliseconds()
@@ -170,6 +180,7 @@ class GUI:
         self.running = True
         parset = self.get_parameter_set()
         iterator = stoppable(self.setup.iterate(parset))
+        logger.debug('create animation')
         self.animator = FuncAnimation(
             self.fig, update,
             iterator,

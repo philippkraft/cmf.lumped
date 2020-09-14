@@ -10,7 +10,8 @@ def gui(model):
     """
     from cmflumped.gui import GUI
     m = _get_model_class(model)()
-    GUI(m).show()
+    with GUI(m) as mgui:
+        mgui.show()
 
 
 def doc(setup):
