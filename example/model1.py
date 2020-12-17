@@ -42,13 +42,19 @@ class Model1(BaseModel):
     parameters = Parameters()
 
     def __init__(self):
+        """
+        Loads the driver data and initializes the model
+        """
         path = os.path.dirname(__file__) or '.'
         data = load_csv(f'{path}/glauburg_temp.csv', time_column=0, P=2, E=1, T=3, Q=1)
+        # This finalizes the model initialization
+        # calls create_nodes and create_connection
         super().__init__(data)
 
     def create_nodes(self):
         """
         Create the nodes (storages, distribution nodes and boundaries) of your model.
+        Called from model initialization (self.__init__)
         """
         # Create two subsurface storages
         self.soil, = self.add_layers(1)
@@ -57,11 +63,20 @@ class Model1(BaseModel):
         self.outlet = self.project.NewOutlet('outlet', 2, 0, -1)
 
     def create_result_structure(self):
+        """
+        Creates the container to store the results in
+        Called, when the run time loop starts
+        """
         outflow = cmf.timeseries(self.data.begin, cmf.day)
         outflow.add(self.outlet(self.data.begin))
         return outflow
 
     def fill_result_structure(self, result, t):
+        """
+        Fills the result structure with data
+
+        Called in each timestep
+        """
         q = self.output(t)
         result.add(q)
         if self.verbose:

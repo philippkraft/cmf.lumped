@@ -5,7 +5,7 @@ click>=7.1.1
 tables
 xlrd>=1.2.0
 cmf==1.6.0
-spotpy>=1.5.8
+spotpy==1.5.8
 sphinx>=2.0.0
 networkx>=2.4
 
