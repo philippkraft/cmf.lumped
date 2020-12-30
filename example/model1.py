@@ -3,6 +3,7 @@ import cmf
 from cmflumped.basemodel import BaseParameters, u, BaseModel
 from cmflumped.dataprovider import load_csv
 
+
 class Parameters(BaseParameters):
     """
     A helper class to define the parameters of the model
@@ -42,7 +43,8 @@ class Model1(BaseModel):
 
     def __init__(self):
         path = os.path.dirname(__file__)
-        data = load_csv(f'{path}/glauburg_temp.csv', time_column=0, P=2, E=1, T=3, Q=1)
+        data = load_csv(os.path.join(path, 'glauburg_temp.csv'),
+                        date=0, P=2, E=1, Tmin=3, Q=1)
         super().__init__(data)
 
     def create_nodes(self):
@@ -109,4 +111,3 @@ class Model1(BaseModel):
         :return: A value representing the model output
         """
         return self.outlet.waterbalance(t)
-

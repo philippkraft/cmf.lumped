@@ -78,12 +78,30 @@ class Network:
         else:
             return 0.0
 
+    def get_volumes(self):
+        """
+        Returns a list of volumes for each node of the graph
+        :return:
+        """
+        return [self.get_volume(n) for n in self.graph.nodes]
+
     def get_connection(self, left_id, right_id)->cmf.flux_connection:
         return self.nodes[left_id].connection_to(self.nodes[right_id])
 
     def get_flux(self, t, left_id, right_id):
         c = self.get_connection(left_id, right_id)
         return np.abs(c.q(c.left_node(), t))
+
+    def get_fluxes(self, t):
+        """
+        Returns a list a fluxes for each edge in the graph
+        :param t: current time to query the fluxes
+        :return:
+        """
+        return [
+            self.get_flux(t, *e)
+            for e in self.graph.edges
+        ]
 
 
 class Fluxogram:
@@ -92,9 +110,15 @@ class Fluxogram:
         self.network = Network(outlet)
         if axis is None:
             axis = plt.gca()
-        self.axis:matplotlib.axes.Axes() = axis
+        self.axis: matplotlib.axes.Axes() = axis
         self.axis.set_axis_off()
         self.with_edge_labels = with_edge_labels
+        self.node_labels = {}
+        self.node_markers = []
+        self.edge_lines = []
+        self.edge_labels = []
+        self.title = None
+
 
     def get_artists(self):
         result = [self.node_markers, self.title]
@@ -103,18 +127,9 @@ class Fluxogram:
         result.extend(self.edge_labels)
         return result
 
-    def get_data(self, t):
-        """
-        Calculates the current drawing sizes
-        :return:
-        """
-        G = self.network.graph
-        return (
-            10 * np.sqrt([self.network.get_volume(n) for n in G.nodes]),
-            [self.network.get_flux(t, *e) for e in G.edges]
-        )
 
     def init_plot(self, linewidth=3):
+
         G = self.network.graph
         pos = G.nodes.data('position')
 
@@ -155,9 +170,9 @@ class Fluxogram:
         return self.get_artists()
 
     def update(self, t):
-        G = self.network.graph
-        volume, flux = self.get_data(t)
-        self.node_markers.set_sizes(volume)
+        volume = self.network.get_volumes()  # volume of the nodes in mm/day
+        flux = self.network.get_fluxes(t)  # fluxes over edges in mm/day
+        self.node_markers.set_sizes(10 * np.sqrt(volume))
         self.edge_lines.set_linewidths(flux)
         if t:
             self.title.set_text(str(t))

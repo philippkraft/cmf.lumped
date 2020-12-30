@@ -1,3 +1,4 @@
+import os
 import cmf
 from cmflumped.basemodel import BaseParameters, u, BaseModel
 from cmflumped.dataprovider import load_csv
@@ -69,7 +70,9 @@ class Model2(BaseModel):
     parameters = Parameters()
 
     def __init__(self):
-        data = load_csv('glauburg_temp.csv', time_column=0, P=2, E=1, T=3, Q=1)
+        path = os.path.dirname(__file__)
+        data = load_csv(os.path.join(path, 'glauburg_temp.csv'),
+                        date=0, P=2, E=1, Tmin=3, Q=1)
         super().__init__( data)
 
     def create_nodes(self):
