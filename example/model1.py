@@ -54,6 +54,7 @@ class Model1(BaseModel):
     def create_nodes(self):
         """
         Create the nodes (storages, distribution nodes and boundaries) of your model.
+        Called from model initialization (self.__init__)
         """
         # Create two subsurface storages
         self.soil, = self.add_layers(1)
@@ -62,18 +63,26 @@ class Model1(BaseModel):
         self.outlet = self.project.NewOutlet('outlet', 2, 0, -1)
 
     def create_result_structure(self):
+        """
+        Creates the container to store the results in
+        Called, when the run time loop starts
+        """
         outflow = cmf.timeseries(self.data.begin, cmf.day)
         outflow.add(self.outlet(self.data.begin))
         return outflow
 
     def fill_result_structure(self, result, t):
+        """
+        Fills the result structure with data
+
+        Called in each timestep
+        """
         q = self.output(t)
         result.add(q)
         if self.verbose:
             print(f'{t!s:>12s} Q={q:10.5g}mm/day')
 
-
-    def set_soil_capacity(self, p: Parameters):
+    def set_soil_capacity(self, p: Parameters)->float:
         """
         Sets the upper soil capacity
         """
@@ -94,7 +103,7 @@ class Model1(BaseModel):
         # Route infiltration / saturation excess to outlet
         cmf.waterbalance_connection(self.cell.surfacewater, self.outlet)
 
-        C = self.set_soil_capacity(p)
+        capacity = self.set_soil_capacity(p)
 
         cmf.timeseriesETpot(self.soil, self.cell.transpiration, self.data.ETpot)
         # Parameterize water stress function
@@ -102,7 +111,7 @@ class Model1(BaseModel):
         self.soil.soil.Ksat = p.infiltration_capacity / 1000
 
         self.cell.set_uptakestress(cmf.VolumeStress(
-            p.ETV1 * C, 0.1 * C)
+            p.ETV1 * capacity, 0.1 * capacity)
         )
 
     def initial_values(self, p: Parameters = None):

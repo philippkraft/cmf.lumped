@@ -200,3 +200,11 @@ class Model2(BaseModel):
         """
         return self.outlet.waterbalance(t)
 
+
+if __name__ == '__main__':
+    from cmflumped.commands import gui
+    import logging
+    logger = logging.getLogger(__file__)
+    logging.basicConfig(level=logging.DEBUG)
+    print(__file__)
+    gui(__file__)

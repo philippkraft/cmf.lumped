@@ -1,12 +1,11 @@
-click>=7.1.1
-numpy>=1.14.0
+pandas>=1.0
+matplotlib>=2.0.0
 scipy
+click>=7.1.1
 tables
-pandas>=0.25.0
 xlrd>=1.2.0
 cmf==1.6.0
-spotpy>=1.5.8
+spotpy==1.5.8
 sphinx>=2.0.0
 networkx>=2.4
-matplotlib>=2.0.0
 

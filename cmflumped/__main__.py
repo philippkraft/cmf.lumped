@@ -3,7 +3,6 @@
 import sys
 
 
-
 def get_commands():
     """
     Gets a dictionary of allowed commands
