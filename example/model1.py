@@ -1,3 +1,4 @@
+
 import os
 import cmf
 from cmflumped.basemodel import BaseParameters, u, BaseModel
@@ -33,8 +34,11 @@ class Parameters(BaseParameters):
 
 class Model1(BaseModel):
     """
-    A simple Lumped model with a single storage, infiltration and
-    saturation excess and a linear discharge
+    CMF-Model for Nidder / Glauberg
+
+    by Philipp Kraft
+
+    last modification: 2021-01-13
     """
     verbose = True
     calibration_start = 2000
@@ -111,3 +115,10 @@ class Model1(BaseModel):
         :return: A value representing the model output
         """
         return self.outlet.waterbalance(t)
+
+
+if __name__ == '__main__':
+    m = Model1()
+    print(cmf.describe(m.project))
+    from cmflumped.gui import GUI
+    GUI(m).show()

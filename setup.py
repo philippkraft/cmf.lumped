@@ -9,7 +9,7 @@ with open("requirements.txt") as fh:
 
 setuptools.setup(
     name="cmflumped",
-    version="2020.3.0",
+    version="2021.1.0",
     author="Philipp Kraft",
     author_email="philipp.kraft@envr.jlug.de",
     description="A toolbox to build, debug, run and calibrate lumped cmf models",
@@ -18,6 +18,7 @@ setuptools.setup(
     url="https://github.com/philippkraft/cmf.lumped",
     packages=setuptools.find_packages(),
     classifiers=[
+        "Development Status :: 3 - Alpha"
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",

@@ -43,9 +43,9 @@ def main_text(setup):
         f'{name(setup)}.{chapter}'
         for chapter in ('concept', 'implementation', 'result')
     )
-
-    mod = sys.modules[setup.__module__]
-    return mod.__doc__ + '\n' + toctree
+    mod = sys.modules.get(setup.__module__, None)
+    mod_doc = mod.__doc__ if mod else ''
+    return mod_doc + '\n' + toctree
 
 
 def impl_text(setup):
