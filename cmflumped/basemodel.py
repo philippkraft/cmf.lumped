@@ -15,6 +15,7 @@ import numpy as np
 import datetime
 import importlib.util
 import os
+import sys
 
 
 def load_module_from_path(path_to_module:str):
@@ -22,11 +23,15 @@ def load_module_from_path(path_to_module:str):
     Loads a module from a path
     :param path_to_module:
     :return:
+
+    See: https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
     """
     name = os.path.basename(path_to_module).replace('.py', '')
     spec = importlib.util.spec_from_file_location(name, path_to_module)
     module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
     spec.loader.exec_module(module)
+
     return module
 
 
@@ -163,7 +168,8 @@ class BaseModel:
         return self.outlet.waterbalance(t)
 
     def __str__(self):
-        return type(self).__module__
+        t = type(self)
+        return f'{t.__module__}.{t.__name__}'
 
     def simulation(self, vector):
         """
