@@ -2,21 +2,19 @@
 from spotpy import describe
 from pathlib import Path
 from textwrap import dedent
-import re
 import cmf
-import os
+import shutil
 import importlib
 import sys
 from sphinx.cmd.build import make_main as sphinx_make
-import webbrowser
 
 
 def name(setup):
-    return str(setup).split('.')[-1]
+    return setup.__module__
 
 
 def Name(setup):
-    return str(setup).split('.')[-1].capitalize()
+    return setup.__module__.capitalize()
 
 
 def concept(setup, overwrite=False):
@@ -37,6 +35,23 @@ def concept(setup, overwrite=False):
             Die Konzept-Skizze für das {Name(setup)} Modell...
         ''')
 
+def index(setup, doc_dir: Path):
+    if (doc_dir / 'index.rst').exists():
+        return (doc_dir / 'index.rst').read_text(encoding='utf-8')
+    elif (doc_dir.parent / 'index.rst').exists():
+        return (doc_dir.parent / 'index.rst').read_text(encoding='utf-8') + \
+               f'\n   {Name(setup)} <{name(setup)}.main>'
+    else:
+        return f'''
+Modelling results
+==============================
+
+.. toctree::
+   :maxdepth: 2
+   
+   {Name(setup)} <{name(setup)}.main>
+
+'''
 
 def main_text(setup):
     toctree = '.. toctree::\n   ' + '\n   '.join(
@@ -44,7 +59,7 @@ def main_text(setup):
         for chapter in ('concept', 'implementation', 'result')
     )
     mod = sys.modules.get(setup.__module__, None)
-    mod_doc = mod.__doc__ if mod else ''
+    mod_doc = getattr(mod, '__doc__', '') or ''
     return mod_doc + '\n' + toctree
 
 
@@ -68,7 +83,7 @@ Modell-Parameter
 Die Modell-Klasse
 .................
 
-.. autoclass:: {str(setup)}.Modell
+.. autoclass:: {str(setup)}
     :members:
 
 Das CMF-Projekt
@@ -79,24 +94,38 @@ Das CMF-Projekt
     ''')
 
 
-def create_rst(setup):
-    # rst = describe.rst(setup)
-    home = Path(f'output/{name(setup)}')
+def create_output_directory(setup):
+    """Creates and prepares the directory for output"""
+    home = Path(f'{name(setup)}-docs').absolute()
     home.mkdir(parents=True, exist_ok=True)
+
+    src = Path(__file__).parent
+    conf_py = src / 'conf.py'
+
+    shutil.copy(conf_py, home)
+    return home
+
+def create_rst(setup)->Path:
+    # rst = describe.rst(setup)
+    home = create_output_directory(setup)
+
     concept_path = (home / f'{name(setup)}.concept.rst')
     if not concept_path.exists():
         concept_path.write_text(concept(setup), encoding='utf-8')
-    (home / f'{name(setup)}.main.rst').write_text(main_text(setup), encoding='utf-8')
-    (home / f'{name(setup)}.implementation.rst').write_text(impl_text(setup), encoding='utf-8')
+    index_path = home / 'index.rst'
+    index_path.write_text(index(setup, home), encoding='utf-8')
+    mt = main_text(setup)
+    it = impl_text(setup)
+    (home / f'{name(setup)}.main.rst').write_text(mt, encoding='utf-8')
+    (home / f'{name(setup)}.implementation.rst').write_text(it, encoding='utf-8')
+    return home
 
-
-def do_sphinx(setup):
+def do_sphinx(setup, home: Path):
     """
     Erstellt aus den rst-Dateien die html-Dokumentation
     """
-    sourcedir = f'output/{name(setup)}'
-    builddir = f'{sourcedir}/_build'
-    args = ['-M', 'html', sourcedir, builddir]
+    builddir = home / '_build'
+    args = ['-M', 'html', str(home), str(builddir)]
     sphinx_make(args)
     return builddir
 

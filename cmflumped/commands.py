@@ -14,7 +14,7 @@ def gui(model):
         mgui.show()
 
 
-def doc(setup):
+def doc(setup, in_browser=False):
     """
     Creates documentation files for the model
     Usage: cmflumped doc <model.py>
@@ -23,9 +23,12 @@ def doc(setup):
     from cmflumped.doctools import create_rst, do_sphinx
     # Schreibe die rst-Dateien
     model = _get_model_class(setup)()
-    create_rst(model)
+    doc_dir = create_rst(model)
     # Erzeuge die HTML-Dokumentation
-    do_sphinx(model)
+    build_dir = do_sphinx(model, doc_dir)
+    if in_browser:
+        import webbrowser
+        webbrowser.open((build_dir / 'html' / 'index.html').as_uri())
 
 
 def descr(model):
