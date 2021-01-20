@@ -159,7 +159,6 @@ class Model1(BaseModel):
 
 
 if __name__ == '__main__':
-    m = Model1()
-    print(cmf.describe(m.project))
-    from cmflumped.gui import GUI
-    GUI(m).show()
+    from cmflumped import commands as cmd
+    cmd.gui(__file__)
+
