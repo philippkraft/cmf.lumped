@@ -28,10 +28,10 @@ class GUI:
         self.flux_ax = plt.axes([0.05, 0.55, 0.5, 0.4], facecolor='0.8')
         self.fluxogram = Fluxogram(setup.outlet, self.flux_ax)
         self.fluxogram.init_plot(3)
-        self.button_play = Widget([0.75, 0.01, 0.04, 0.03], Button, '\u25B6', on_clicked=self.animate)
-        self.button_stop = Widget([0.8, 0.01, 0.04, 0.03], Button, '\u25A0', on_clicked=self.stop)
-        self.button_simulate = Widget([0.85, 0.01, 0.04, 0.03], Button, '\u25B6\u25B6', on_clicked=self.run)
-        self.button_clear = Widget([0.9, 0.01, 0.04, 0.03], Button, '\u2718', on_clicked=self.clear)
+        self.button_play = Widget([0.85, 0.01, 0.04, 0.03], Button, '\u25B6', on_clicked=self.animate)
+        # self.button_stop = Widget([0.8, 0.01, 0.04, 0.03], Button, '\u25A0', on_clicked=self.stop)
+        self.button_simulate = Widget([0.9, 0.01, 0.04, 0.03], Button, '\u25B6\u25B6', on_clicked=self.run)
+        # self.button_clear = Widget([0.9, 0.01, 0.04, 0.03], Button, '\u2718', on_clicked=self.clear)
         self.setup: BaseModel = setup
         self.parameter_values = {
             p['name']: p['optguess']
