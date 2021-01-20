@@ -18,6 +18,10 @@ def Name(setup):
 
 
 def concept(setup, overwrite=False):
+    cls = getattr(sys.modules[setup.__module__], 'Concept', None)
+    if cls:
+        doc = cls.__doc__.format(name=name(setup), Name=Name(setup))
+        return dedent(doc)
     return dedent(f'''
         Konzept für das Modell von {Name(setup)}
         ------------------------------------------
