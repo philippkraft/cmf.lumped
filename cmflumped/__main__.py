@@ -19,9 +19,9 @@ def get_commands():
 def main(args=sys.argv):
 
     commands = get_commands()
-    if len(args) > 1 and sys.argv[1] in commands:
-        f = commands[sys.argv[1]]
-        if len(args) == 2 or sys.argv[2] == 'help':
+    if len(args) > 1 and args[1] in commands:
+        f = commands[args[1]]
+        if len(args) == 2 or args[2] == 'help':
             sys.stderr.write(f.__doc__)
         else:
             f(*args[2:])
