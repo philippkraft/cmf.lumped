@@ -72,7 +72,7 @@ class Model2(BaseModel):
     def __init__(self):
         path = os.path.dirname(__file__)
         data = load_csv(os.path.join(path, 'glauburg_temp.csv'),
-                        date=0, P=2, E=1, Tmin=3, Q=1)
+                        date=0, P=2, E=1, Tmin=3, Q=0)
         super().__init__( data)
 
     def create_nodes(self):

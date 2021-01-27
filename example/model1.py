@@ -1,9 +1,10 @@
 """
 CMF-Model for Nidder / Glauberg
+===============================
 
 by Philipp Kraft
 
-last modification: 2021-01-20
+last modification: 2021-01-21 09:27
 
 This text is from the doc-string of the Model's module
 """
@@ -53,6 +54,7 @@ class Parameters(BaseParameters):
         10, 500, default=100,
         doc='Capacity of rooted zone in :math:`mm`'
     )
+    Sfc = u(0.0, 1.0, default=0.5, doc='Fraction of capacity at field capacity in mm/mm. field capicty = Sfc * Smax')
     ETV1 = u(
         0.1, 0.9, default=0.5,
         doc='Fraction of soil capacity where ET starts to be limited'
@@ -77,8 +79,15 @@ class Model1(BaseModel):
 
     def __init__(self):
         path = os.path.dirname(__file__)
+        # date,Q,ETpot,P,air_temp_proxy,soil_temperature_5cm
         data = load_csv(os.path.join(path, 'glauburg_temp.csv'),
-                        date=0, P=2, E=1, Tmin=3, Q=1)
+                        date=0, P=2, E=1, Tmin=3, Q=0)
+        
+        # Call BaseModel.__init__, which does the following
+        #   self.project = cmf.project
+        #   self.cell = self.project.NewCell(0, 0, 0, 1000)
+        #   self.create_nodes()
+        
         super().__init__(data)
 
     def create_nodes(self):
@@ -87,8 +96,8 @@ class Model1(BaseModel):
 
         Called from model initialization (self.__init__)
         """
-        # Create two subsurface storages
-        self.soil, = self.add_layers(1)
+        # Create a subsurface storage
+        self.soil = self.cell.add_layer(1)
         self.soil.Name = 'Soil'
         # Make an outlet
         self.outlet = self.project.NewOutlet('outlet', 2, 0, -1)
@@ -137,15 +146,23 @@ class Model1(BaseModel):
         capacity = self.set_soil_capacity(p)
 
         cmf.timeseriesETpot(self.soil, self.cell.transpiration, self.data.ETpot)
-        # Parameterize water stress function
 
+        # Parameterize infiltration capacity
         self.soil.soil.Ksat = p.infiltration_capacity / 1000
 
+        # Parameterize water stress function
         self.cell.set_uptakestress(cmf.VolumeStress(
-            p.ETV1 * capacity, 0.1 * capacity)
+            p.ETV1 * capacity, 0)
         )
 
     def initial_values(self, p: Parameters = None):
+        """
+        Is called before a simulation starts and should reset
+        every storage of the model and needs to be defined for each model
+        :param p: The parameters object. May or may not be used in the function
+        :return: None
+        """
+
         self.soil.volume = self.soil.get_capacity() * 0.5
 
     def output(self, t):
@@ -160,5 +177,9 @@ class Model1(BaseModel):
 
 if __name__ == '__main__':
     from cmflumped import commands as cmd
+    # m = Model1()
+    # Starts the graphic user interface for manual calibration.
+    # In Spyder: Make sure to run this in an external terminal (Ctrl + F6)
     cmd.gui(__file__)
+    
 
