@@ -35,7 +35,7 @@ def sample(model, runs, algname='lhs'):
     alg = getattr(spotpy.algorithms, algname)
     sampler = alg(
         model, sim_timeout=600,
-        dbname=dbname(str(model).split('.')[-1]), dbformat='hdf5', parallel=parallel())
+        dbname=dbname(str(model)), dbformat='hdf5', parallel=parallel())
     print(spotpy.describe.sampler(sampler))
     print(spotpy.describe.setup(model))
     sampler.sample(runs)

@@ -180,6 +180,6 @@ if __name__ == '__main__':
     # m = Model1()
     # Starts the graphic user interface for manual calibration.
     # In Spyder: Make sure to run this in an external terminal (Ctrl + F6)
-    cmd.gui(__file__)
+    cmd.doc(__file__, in_browser=True)
     
 

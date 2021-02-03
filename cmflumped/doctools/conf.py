@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'mp111.2019'
+project = 'mp111.2020'
 copyright = '2020, Philipp Kraft et al'
 author = 'Philipp Kraft et al'
 

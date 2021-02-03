@@ -4,6 +4,32 @@ from cmflumped.basemodel import BaseParameters, u, BaseModel
 from cmflumped.dataprovider import load_csv
 
 
+class Concept:
+    """
+    Concept for Model2
+    ==================
+
+    A lumped model with an interception storage, snow, distinct
+    soil and groundwater storages. Baseflow occurs from the groundwater,
+    surface runoff is triggered by infiltration excess and / or saturation
+    excess.
+
+    The implementation idea is shown in :numref:`fig-model2-concept`
+
+    .. _fig-model2-concept:
+
+    .. figure:: model2.concept.png
+        :width: 800px
+        :align: center
+        :figclass: align-center
+
+        A simple figure showing the connections in the model
+
+    """
+    ...
+
+
+
 class Parameters(BaseParameters):
     """
     A helper class to define the parameters of the model
@@ -80,7 +106,9 @@ class Model2(BaseModel):
         Create the nodes (storages, distribution nodes and boundaries) of your model.
         """
         # Create two subsurface storages
-        self.soil, self.gw = self.add_layers(1, 1)
+        self.soil = self.cell.add_layer(1)
+        self.gw = self.cell.add_layer(2)
+
         self.soil.Name = 'Soil'
         self.gw.Name = 'GW'
 
@@ -121,7 +149,7 @@ class Model2(BaseModel):
         and routes all runoff directly without timelag to the outlet
         """
         # Infiltration
-        cmf.SimpleInfiltration(self.soil, self.cell.surfacewater, W0=p.infiltration_w0)
+        cmf.ConceptualInfiltration(self.soil, self.cell.surfacewater, W0=p.infiltration_w0)
         # Route infiltration / saturation excess to outlet
         cmf.waterbalance_connection(self.cell.surfacewater, self.outlet)
 
@@ -154,7 +182,6 @@ class Model2(BaseModel):
 
         """
 
-
         # Route snow melt to surface
         if self.cell.snow:
             self.create_snow_connections(p)
@@ -167,7 +194,7 @@ class Model2(BaseModel):
         self.soil.soil.Ksat = p.infiltration_capacity / 1000
 
         self.cell.set_uptakestress(cmf.VolumeStress(
-            p.ETV1 * C, 0.1 * C)
+            p.ETV1 * C, 0)
         )
 
         if self.cell.canopy:
@@ -185,7 +212,7 @@ class Model2(BaseModel):
         cmf.LinearStorageConnection(
             self.gw, self.outlet,
             residencetime=p.groundwater_residence_time,
-            residual=0 * C
+            residual=0
         )
 
     def initial_values(self, p: Parameters = None):
@@ -199,6 +226,18 @@ class Model2(BaseModel):
         :return: A value representing the model output
         """
         return self.outlet.waterbalance(t)
+
+
+class Result:
+    """
+    Results for {name}
+    ======================================
+
+    Here you are going to describe the results
+
+    """
+
+    ...
 
 
 if __name__ == '__main__':

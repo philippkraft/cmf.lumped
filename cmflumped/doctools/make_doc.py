@@ -7,7 +7,8 @@ import shutil
 import importlib
 import sys
 from sphinx.cmd.build import make_main as sphinx_make
-
+from logging import getLogger
+logger = getLogger(__name__)
 
 def name(setup):
     return setup.__module__
@@ -17,7 +18,7 @@ def Name(setup):
     return setup.__module__.capitalize()
 
 
-def concept(setup, overwrite=False):
+def concept(setup):
     cls = getattr(sys.modules[setup.__module__], 'Concept', None)
     if cls:
         doc = cls.__doc__.format(name=name(setup), Name=Name(setup))
@@ -38,6 +39,17 @@ def concept(setup, overwrite=False):
 
             Die Konzept-Skizze für das {Name(setup)} Modell...
         ''')
+
+
+def write_doc_text(setup: object, classname: str, homedir: Path):
+
+    cls = getattr(sys.modules[setup.__module__], classname, None)
+    if cls:
+        doc = dedent(cls.__doc__.format(name=name(setup), Name=Name(setup))).strip() + '\n'
+        path = homedir / f'{setup.__module__}.{classname.lower()}.rst'
+        path.write_text(doc, encoding='utf-8')
+    else:
+        logger.warning(f'No class <{classname}> found in {setup.__module__}')
 
 def index(setup, doc_dir: Path):
     if (doc_dir / 'index.rst').exists():
@@ -113,9 +125,9 @@ def create_rst(setup)->Path:
     # rst = describe.rst(setup)
     home = create_output_directory(setup)
 
-    concept_path = (home / f'{name(setup)}.concept.rst')
-    if not concept_path.exists():
-        concept_path.write_text(concept(setup), encoding='utf-8')
+    # (home / f'{name(setup)}.concept.rst').write_text(concept(setup), encoding='utf-8')
+    write_doc_text(setup, 'Concept', home)
+    write_doc_text(setup, 'Result', home)
     index_path = home / 'index.rst'
     index_path.write_text(index(setup, home), encoding='utf-8')
     mt = main_text(setup)
