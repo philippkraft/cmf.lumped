@@ -218,6 +218,7 @@ class Model2(BaseModel):
     def initial_values(self, p: Parameters = None):
         self.soil.volume = self.soil.get_capacity() * p.percolation_V0
         self.gw.volume = 1.0
+        self.cell.snow.volume = 0.0
 
     def output(self, t):
         """

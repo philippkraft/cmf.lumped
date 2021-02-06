@@ -9,7 +9,7 @@ with open("requirements.txt") as fh:
 
 setuptools.setup(
     name="cmflumped",
-    version="2021.1.20",
+    version="2021.2.03",
     author="Philipp Kraft",
     author_email="philipp.kraft@envr.jlug.de",
     description="A toolbox to build, debug, run and calibrate lumped cmf models",
