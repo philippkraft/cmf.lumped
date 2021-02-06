@@ -8,13 +8,7 @@ import os
 from matplotlib import pyplot as plt
 from textwrap import dedent
 
-
-class Catchment:
-    """
-    Eine *kurze* Beschreibung des Einzugsgebietes
-    """
-    area = 2976.41e6  # sq m
-
+from .. import BaseModel
 
 class Result:
     """
@@ -38,16 +32,32 @@ class Result:
         n = np.sum(np.array(self.data.cols.like1[:]) > threshold)
         return threshold, n
 
-    def __init__(self, model):
-        self.name = str(model).split('.')[-1]
-        self.data_file = tables.open_file(f'output/{self.name}/{self.name}.h5')
+    def __init__(self, model: BaseModel, result_file:str = None):
+        self.name = str(model)
+        self.result_filename = result_file or f'{self.name}.h5'
+
+        self.data_file = tables.open_file(self.result_filename)
         self.data = self.data_file.get_node(f'/{self.name}')
         self.model = model
         # Calculate the behaviaroul model
         self.threshold, self.n = self.calculate_threshold()
-        self.obs = self.load_obs()
-        os.makedirs(f'output/{self.name}', exist_ok=True)
-    
+        self.obs = self.model.data.Q.to_pandas()
+
+    def prune_results(self, condition='like1>=0.0'):
+        """
+        Prunes the result table
+        :param condition: A Python condition to select behaving runs
+        :return:
+        """
+        new_filename = self.result_filename.replace('.h5','.pruned.h5')
+        pruned_data = self.data.read_where(condition)
+        with tables.open_file(new_filename, 'w') as o:
+            tab = tables.Table(o.root, self.name, self.data.description)
+            tab.append(pruned_data)
+        self.result_filename = new_filename
+        self.data_file = tables.open_file(self.result_filename)
+        self.data = self.data_file.get_node(f'/{self.name}')
+
     def close(self):
         self.data_file.close()
 
@@ -59,7 +69,7 @@ class Result:
 
     def filename(self, *names):
         ext = '.'.join(names)
-        return f'output/{self.name}/{self.name}.{ext}'
+        return f'{self.name}.{ext}'
 
     def write_rst(self, *txt):
         with open(self.filename('result', 'rst'), 'w') as f:
@@ -149,7 +159,7 @@ class Result:
         res += ':Validation (1986-1989): NSE={1:3g}, PBIAS={3:3g}\n\n'
         res = res.format(*np.array(self.like(best_run)))
         res += dedent(f'''
-        {self.n} akzeptierte Parameter sets mit einer :math:`NSE\\ge{self.threshold:0.2f}`
+        {self.n}/{len(self.data)} akzeptierte Parameter sets mit einer :math:`NSE\\ge{self.threshold:0.2f}`
                 
         .. todo:: 
            {self.name.capitalize()}: Ergbenisse beschreiben
