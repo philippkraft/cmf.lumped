@@ -18,38 +18,20 @@ def Name(setup):
     return setup.__module__.capitalize()
 
 
-def concept(setup):
-    cls = getattr(sys.modules[setup.__module__], 'Concept', None)
-    if cls:
-        doc = cls.__doc__.format(name=name(setup), Name=Name(setup))
-        return dedent(doc)
-    return dedent(f'''
-        Konzept für das Modell von {Name(setup)}
-        ------------------------------------------
-
-        :numref:`fig_{name(setup)}_concept` zeigt das Modell Konzept. Die Idee beruht auf den folgenden Ideen:
-
-        .. todo:: 
-
-           {Name(setup)}: Hier folgt eine Beschreibung des Konzepts.
-
-
-        .. _fig_{name(setup)}_concept:
-        .. figure:: {name(setup)}.concept.png
-
-            Die Konzept-Skizze für das {Name(setup)} Modell...
-        ''')
-
-
 def write_doc_text(setup: object, classname: str, homedir: Path):
 
     cls = getattr(sys.modules[setup.__module__], classname, None)
     if cls:
         doc = dedent(cls.__doc__.format(name=name(setup), Name=Name(setup))).strip() + '\n'
-        path = homedir / f'{setup.__module__}.{classname.lower()}.rst'
+        cname = f'{setup.__module__}.{classname.lower()}'
+        path = homedir / f'{cname}.rst'
         path.write_text(doc, encoding='utf-8')
+        imgpath = homedir.parent() / (cname + '.png')
+        if imgpath.exists():
+            shutil.copy(imgpath, homedir)
     else:
         logger.warning(f'No class <{classname}> found in {setup.__module__}')
+
 
 def index(setup, doc_dir: Path):
     if (doc_dir / 'index.rst').exists():
@@ -119,6 +101,7 @@ def create_output_directory(setup):
     conf_py = src / 'conf.py'
 
     shutil.copy(conf_py, home)
+
     return home
 
 def create_rst(setup)->Path:

@@ -14,6 +14,20 @@ def gui(model):
         mgui.show()
 
 
+def result(model):
+    """
+    Loads and analyses the result file from cmf.lumped run model.py 10000
+    """
+    from .doctools.result import Result
+    m = _get_model_class(model)()
+    with Result(m, 'larissa.Larissa.pruned.h5') as r:
+        print(r.summary())
+        r.prune_results()
+        print(r.dotty_plot())
+        print(r.timeseries_plot())
+
+
+
 def doc(setup, in_browser=False):
     """
     Creates documentation files for the model
