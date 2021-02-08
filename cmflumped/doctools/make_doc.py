@@ -26,7 +26,7 @@ def write_doc_text(setup: object, classname: str, homedir: Path):
         cname = f'{setup.__module__}.{classname.lower()}'
         path = homedir / f'{cname}.rst'
         path.write_text(doc, encoding='utf-8')
-        imgpath = homedir.parent() / (cname + '.png')
+        imgpath = homedir.parent / (cname + '.png')
         if imgpath.exists():
             shutil.copy(imgpath, homedir)
     else:

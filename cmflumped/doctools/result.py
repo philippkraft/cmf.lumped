@@ -14,6 +14,8 @@ class Result:
     """
     Das Modell
     """
+
+    threshold = None
     def calculate_threshold(self, n_min=30):
         """
         Eigentlich muss man *a priori* festlegen, welches Gütemaß akzeptable
@@ -39,9 +41,17 @@ class Result:
         self.data_file = tables.open_file(self.result_filename)
         self.data = self.data_file.get_node(f'/{self.name}')
         self.model = model
-        # Calculate the behaviaroul model
+        # Calculate the behavioural model
         self.threshold, self.n = self.calculate_threshold()
         self.obs = self.model.data.Q.to_pandas()
+
+    def format_doc_string(self, **kwargs):
+        """
+        Takes the doc string of the class and fills the labels
+
+        """
+        doc = dedent(self.__doc__).strip() + '\n'
+        return doc.format(**kwargs)
 
     def prune_results(self, condition='like1>=0.0'):
         """
@@ -150,10 +160,14 @@ class Result:
 
     def like(self, row):
         """Returns the 4 objective functions for a model run"""
-        return [self.data.col(f'like{i}')[row] for i in range(1,5)] 
+        return [self.data.col(colname)[row] for colname in self.data.colnames if colname.startswith('like')]
+
+    def best_run_id(self):
+        """Returns the row number of the best run"""
+        return np.array(self.data.cols.like1[:]).argmax()
 
     def summary(self):
-        best_run = np.array(self.data.cols.like1[:]).argmax()
+        best_run = self.best_run_id()
         res = f'Ergebnisse\n' + '-' * 10 + '\n\n'
         res += ':Calibration (1980-1985):  NSE={0:3g}, PBIAS={2:3g}\n\n'
         res += ':Validation (1986-1989): NSE={1:3g}, PBIAS={3:3g}\n\n'

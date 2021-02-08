@@ -1,6 +1,6 @@
 import cmf
 import pandas as pd
-
+import datetime as dt
 
 class DataProvider:
     """
@@ -21,9 +21,9 @@ class DataProvider:
                     - None means: use Tmin as daily average Temperature
         """
         # Get begin, step and end from the date column
-        self.begin = data.index[0].to_pydatetime()
-        self.end = data.index[-1].to_pydatetime()
-        self.step = data.index[1].to_pydatetime() - self.begin
+        self.begin: dt.datetime = data.index[0].to_pydatetime()
+        self.end: dt.datetime = data.index[-1].to_pydatetime()
+        self.step: dt.timedelta = data.index[1].to_pydatetime() - self.begin
 
         def a2ts(a):
             """Converts an array column to a timeseries"""

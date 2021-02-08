@@ -2,6 +2,7 @@ import os
 import cmf
 from cmflumped.basemodel import BaseParameters, u, BaseModel
 from cmflumped.dataprovider import load_csv
+from cmflumped.doctools.result import Result as BaseResult
 
 
 class Concept:
@@ -229,16 +230,66 @@ class Model2(BaseModel):
         return self.outlet.waterbalance(t)
 
 
-class Result:
+class Result(BaseResult):
     """
-    Results for {name}
+    Results for {self.name}
     ======================================
 
-    Here you are going to describe the results
+    Nash-Sutcliffe-Efficiancy and PBIAS for the run with the
+    lowest NSE during calibration period
+
+    :Calibration ({CStart}-{CEnd}):  NSE={like1:3g}, PBIAS={like3:3g}
+    :Validation ({VStart}-{VEnd}):  NSE={like2:3g}, PBIAS={like4:3g}
+
+    With a rejection criteria of NSE < {self.threshold:0.4g}
+    {self.n} runs have been accepted.
+
+    The modelled timeseries of runoff is shown in :numref:`fig-{name}-timeseries`.
+
+    .. fig-{name}-timeseries:
+
+    .. figure:: {name}.timeseries.png
+        :width: 800px
+
+        Modelled vs. observed runoff in mm/day.
+
+        Red line - best model run, yellow area - 5th - 95th percentile area of {self.n} runs
+        with an NSE > {self.threshold:0.4g}, black dotted line is the observed runoff
+
+    The distribution of parameters is shown in :numref:`_fig-{name}-dotty`
+
+    .. fig-{name}-dotty:
+
+    .. figure:: {name}.dotty.png
+        :width: 800px
+
+        The parameter distributions of the accepted parameter sets
 
     """
 
-    ...
+    def __init__(self, model, doc_dir):
+        """
+        :param figures_directory: The directory to save the figures
+        """
+        super().__init__(model, doc_dir)
+        self.dotty_plot()
+        self.timeseries_plot()
+
+    def __str__(self):
+        best_run = self.best_run_id()
+        like1, like2, like3, like4 = self.like(best_run)
+        return self.format_doc_string(
+            like1=like1, like2=like2, like3=like3, like4=like4,
+            CStart=self.model.calibration_start,
+            CEnd=self.model.validation_start - 1,
+            VStart=self.model.validation_start,
+            VEnd=self.model.data.end.year,
+            self=self
+        )
+
+
+
+
 
 
 if __name__ == '__main__':
@@ -247,4 +298,4 @@ if __name__ == '__main__':
     logger = logging.getLogger(__file__)
     logging.basicConfig(level=logging.DEBUG)
     print(__file__)
-    gui(__file__)
+    # gui(__file__)

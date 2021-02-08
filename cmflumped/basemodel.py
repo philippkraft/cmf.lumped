@@ -16,6 +16,7 @@ import datetime
 import importlib.util
 import os
 import sys
+from .dataprovider import DataProvider
 
 
 def load_module_from_path(path_to_module:str):
@@ -35,27 +36,31 @@ def load_module_from_path(path_to_module:str):
     return module
 
 
-def get_model_class(path_to_module:str):
+def get_model_class(path_to_module:str, classname=None):
     """
     This function get the class of a lumped cmf model from
     a Python file
-    :param path_to_module:
-    :return:
+    :param path_to_module: The file path to the module
+    :param classname: A classname, if None the first childclass of BaseModel is returned
+    :return: The model class
     """
 
     module = load_module_from_path(path_to_module)
-    # Loop through all members of the module and detect a class that is derived
-    # from the cmflumped.BaseModel
-    for name, obj in vars(module).items():
-        if (
-                name[0] != '_'
-                and isinstance(obj, type)
-                and obj is not module.BaseModel
-                and issubclass(obj, module.BaseModel)
-        ):
-            return obj
-    # Raise Error if no fitting class is found
-    raise ValueError(f'Module "{path_to_module}" has no class that derives from cmflumped.BaseModel')
+    if classname:
+        return getattr(module, classname)
+    else:
+        # Loop through all members of the module and detect a class that is derived
+        # from the cmflumped.BaseModel
+        for name, obj in vars(module).items():
+            if (
+                    name[0] != '_'
+                    and isinstance(obj, type)
+                    and obj is not module.BaseModel
+                    and issubclass(obj, module.BaseModel)
+            ):
+                return obj
+        # Raise Error if no fitting class is found
+        raise ValueError(f'Module "{path_to_module}" has no class that derives from cmflumped.BaseModel')
 
 
 
@@ -89,7 +94,7 @@ class BaseModel:
     calibration_start = 2000
     validation_start = 2010
 
-    def __init__(self, dataprovider):
+    def __init__(self, dataprovider: DataProvider):
         """
         Creates the basic structure of the model
         """

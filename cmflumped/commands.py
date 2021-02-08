@@ -18,14 +18,10 @@ def result(model):
     """
     Loads and analyses the result file from cmf.lumped run model.py 10000
     """
-    from .doctools.result import Result
     m = _get_model_class(model)()
+    Result = _get_model_class(model, 'Result')
     with Result(m) as r:
-        print(r.summary())
-        r.prune_results()
-        print(r.dotty_plot())
-        print(r.timeseries_plot())
-
+        print(r)
 
 
 def doc(setup, in_browser=False):
