@@ -33,6 +33,23 @@ def write_doc_text(setup: object, classname: str, homedir: Path):
         logger.warning(f'No class <{classname}> found in {setup.__module__}')
 
 
+def write_result_text(setup: object, homedir: Path, classname='Result'):
+    cls = getattr(sys.modules[setup.__module__], classname, None)
+    if cls:
+
+        with cls(setup) as r:
+            doc = str(r)
+            cname = f'{setup.__module__}.{classname.lower()}'
+            path = homedir / f'{cname}.rst'
+            path.write_text(doc, encoding='utf-8')
+            r.outputdir = str(homedir)
+            r.dotty_plot()
+            r.timeseries_plot()
+    else:
+        logger.warning(f'No class <{classname}> found in {setup.__module__}')
+
+
+
 def index(setup, doc_dir: Path):
     if (doc_dir / 'index.rst').exists():
         return (doc_dir / 'index.rst').read_text(encoding='utf-8')
@@ -110,7 +127,7 @@ def create_rst(setup)->Path:
 
     # (home / f'{name(setup)}.concept.rst').write_text(concept(setup), encoding='utf-8')
     write_doc_text(setup, 'Concept', home)
-    write_doc_text(setup, 'Result', home)
+    write_result_text(setup, home)
     index_path = home / 'index.rst'
     index_path.write_text(index(setup, home), encoding='utf-8')
     mt = main_text(setup)

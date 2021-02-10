@@ -7,9 +7,23 @@ with open("requirements.txt") as fh:
     requirements = fh.readlines()
 
 
+def get_version(rel_path):
+    import os
+    def read(rel_path):
+        here = os.path.abspath(os.path.dirname(__file__))
+        with open(os.path.join(here, rel_path)) as f:
+            return f.read()
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
 setuptools.setup(
     name="cmflumped",
-    version="2021.2.06",
+    version=get_version('cmflumped/__init__.py'),
     author="Philipp Kraft",
     author_email="philipp.kraft@envr.jlug.de",
     description="A toolbox to build, debug, run and calibrate lumped cmf models",

@@ -238,8 +238,8 @@ class Result(BaseResult):
     Nash-Sutcliffe-Efficiancy and PBIAS for the run with the
     lowest NSE during calibration period
 
-    :Calibration ({CStart}-{CEnd}):  NSE={like1:3g}, PBIAS={like3:3g}
-    :Validation ({VStart}-{VEnd}):  NSE={like2:3g}, PBIAS={like4:3g}
+    :Calibration ({CStart}-{CEnd}):  NSE={like1:3g}, PBIAS={like3:3g}%
+    :Validation ({VStart}-{VEnd}):  NSE={like2:3g}, PBIAS={like4:3g}%
 
     With a rejection criteria of NSE < {self.threshold:0.4g}
     {self.n} runs have been accepted.
@@ -286,10 +286,6 @@ class Result(BaseResult):
             VEnd=self.model.data.end.year,
             self=self
         )
-
-
-
-
 
 
 if __name__ == '__main__':

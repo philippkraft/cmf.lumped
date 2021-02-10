@@ -3,28 +3,26 @@ import numpy as np
 from scipy.stats import gaussian_kde
 import tables
 import pandas as pd
-import os
-# matplotlib.use('Agg')
+
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from textwrap import dedent
 
 from .. import BaseModel
 
-class Result:
+class BaseResult:
     """
-    Das Modell
+    A base class for documentary result classes. See usage in example/model2.py
     """
 
     threshold = None
     def calculate_threshold(self, n_min=30):
         """
-        Eigentlich muss man *a priori* festlegen, welches Gütemaß akzeptable
-        Modellläufe darstellt. Hier wird zuerst eine Nash-Suttcliffe-Effizienz
-        von 0.6 als akzeptable Güte angesetzt, sie wird dann aber schrittweise
-        reduziert bis mindestens :math:`n_{min}` Modelläufe als akzeptabel gewertet
-        werden
+        Calculates a rejection criteria for given data.
+        Use this is only for explorative studies, for a real GLUE approach,
+        you may not change an a priori defined rejection criterium.
 
-        :return: Effektive mindest Effizienz
+        :param n_min: Minimum number of behavioural runs
         """
         # Calculate NSE threshold
         threshold = 0.7
@@ -34,16 +32,18 @@ class Result:
         n = np.sum(np.array(self.data.cols.like1[:]) > threshold)
         return threshold, n
 
-    def __init__(self, model: BaseModel, result_file:str = None):
-        self.name = str(model)
-        self.result_filename = result_file or f'{self.name}.h5'
+    def __init__(self, model: BaseModel, result_file:str = None, outputdir = '.'):
+        self.name = model.__module__
+        if not hasattr(self, 'result_filename'):
+            self.result_filename = result_file or f'{self.name}.h5'
 
         self.data_file = tables.open_file(self.result_filename)
-        self.data = self.data_file.get_node(f'/{self.name}')
+        self.data = self.data_file.get_node(f'/{model}')
         self.model = model
         # Calculate the behavioural model
         self.threshold, self.n = self.calculate_threshold()
         self.obs = self.model.data.Q.to_pandas()
+        self.outputdir = outputdir
 
     def format_doc_string(self, **kwargs):
         """
@@ -51,6 +51,8 @@ class Result:
 
         """
         doc = dedent(self.__doc__).strip() + '\n'
+        kwargs['self'] = self
+        kwargs.setdefault('name', self.name)
         return doc.format(**kwargs)
 
     def prune_results(self, condition='like1>=0.0'):
@@ -66,7 +68,7 @@ class Result:
             tab.append(pruned_data)
         self.result_filename = new_filename
         self.data_file = tables.open_file(self.result_filename)
-        self.data = self.data_file.get_node(f'/{self.name}')
+        self.data = self.data_file.get_node(f'/{self.model}')
 
     def close(self):
         self.data_file.close()
@@ -79,7 +81,7 @@ class Result:
 
     def filename(self, *names):
         ext = '.'.join(names)
-        return f'{self.name}.{ext}'
+        return f'{self.outputdir}/{self.name}.{ext}'
 
     def write_rst(self, *txt):
         with open(self.filename('result', 'rst'), 'w') as f:
