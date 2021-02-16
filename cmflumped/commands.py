@@ -73,7 +73,7 @@ def run(model, runs=None, sampler='lhs'):
     m: _BaseModel = _get_model_class(model)()
     if runs:
         n = int(runs)
-        sample(m, n, sampler)
+        sample(m, n, sampler, save_threshold=0.0)
     else:
         from spotpy.parameter import create_set
         p = create_set(m, 'optguess')

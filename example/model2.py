@@ -256,9 +256,9 @@ class Result(BaseResult):
         Red line - best model run, yellow area - 5th - 95th percentile area of {self.n} runs
         with an NSE > {self.threshold:0.4g}, black dotted line is the observed runoff
 
-    The distribution of parameters is shown in :numref:`_fig-{name}-dotty`
+    The distribution of parameters is shown in :numref:`fig-{name}-dotty`
 
-    .. fig-{name}-dotty:
+    .. _fig-{name}-dotty:
 
     .. figure:: {name}.dotty.png
         :width: 800px

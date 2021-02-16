@@ -173,8 +173,7 @@ class BaseModel:
         return self.outlet.waterbalance(t)
 
     def __str__(self):
-        t = type(self)
-        return f'{t.__module__}.{t.__name__}'
+        return self.__module__
 
     def simulation(self, vector):
         """

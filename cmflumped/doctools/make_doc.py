@@ -98,7 +98,7 @@ Modell-Parameter
 Die Modell-Klasse
 .................
 
-.. autoclass:: {str(setup)}
+.. autoclass:: {setup.__module__}.{setup.__class__.__name__}
     :members:
 
 Das CMF-Projekt
