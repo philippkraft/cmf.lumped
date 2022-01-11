@@ -32,7 +32,7 @@ class BaseResult:
         n = np.sum(np.array(self.data.cols.like1[:]) > threshold)
         return threshold, n
 
-    def __init__(self, model: BaseModel, result_file:str = None, outputdir = '.'):
+    def __init__(self, model: BaseModel, result_file: str = None, outputdir = '.'):
         self.name = model.__module__
         if not hasattr(self, 'result_filename'):
             self.result_filename = result_file or f'{self.name}.h5'
@@ -123,8 +123,7 @@ class BaseResult:
 
     def timeseries_plot(self):
         """
-        Zeitreihe der Modelle mit einem
-
+        Plots the result timeseries woth the p5 to p95 uncertainty interval
         """
         import pylab as plt
         nse = np.array(self.data.cols.like1)
@@ -138,7 +137,7 @@ class BaseResult:
         p95 = np.percentile(data, 95, 0)
 
         fig = plt.figure(figsize=(16, 8), dpi=100)
-        time = np.arange(np.datetime64('1991','D'), np.datetime64('2019', 'D'))
+        time = np.arange(np.datetime64('1991', 'D'), np.datetime64('2019', 'D'))
         plt.fill_between(time, p5, p95, facecolor='#ffff00', edgecolor='none', label='Modelled uncertainty')
         plt.plot(time, self.obs, 'k-', label='Observed')
         plt.plot(time, best, 'r-', label='Best model')
@@ -186,18 +185,6 @@ class BaseResult:
         
         return res
         
-    def discussion(self):
-        return dedent(f'''
-        Diskussion
-        ----------
-        
-        .. todo:: 
-           {self.name.capitalize()}: Diskussion beschreiben, Namen für Vergleich austauschen
-        
-        Die Ergebniss aus :numref:`fig_{self.name}_timeseries` sind immer noch besser als von Philipp (:numref:`fig_philipp_timeseries`). 
-        Das liegt daran, ...
-        
-        ''')
 
 
 

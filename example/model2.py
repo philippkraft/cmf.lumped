@@ -2,7 +2,7 @@ import os
 import cmf
 from cmflumped.basemodel import BaseParameters, u, BaseModel
 from cmflumped.dataprovider import load_csv
-from cmflumped.doctools.result import Result as BaseResult
+from cmflumped.doctools.result import BaseResult
 
 
 class Concept:
@@ -267,11 +267,11 @@ class Result(BaseResult):
 
     """
 
-    def __init__(self, model, doc_dir):
+    def __init__(self, model, outputdir):
         """
-        :param figures_directory: The directory to save the figures
+        :param doc_dir: The directory to save the figures
         """
-        super().__init__(model, doc_dir)
+        super().__init__(model, outputdir=outputdir)
         self.dotty_plot()
         self.timeseries_plot()
 
@@ -287,11 +287,25 @@ class Result(BaseResult):
             self=self
         )
 
+class Discussion:
+    """
+    Diskussion
+    ----------
+
+    .. todo::
+       {self.name.capitalize()}: Diskussion beschreiben, Namen für Vergleich austauschen
+
+    Die Ergebniss aus :numref:`fig_{self.name}_timeseries` sind immer noch besser als von Philipp (:numref:`fig_philipp_timeseries`).
+    Das liegt daran, ...
+
+    """
+
 
 if __name__ == '__main__':
-    from cmflumped.commands import gui
+    from cmflumped.commands import gui, doc
     import logging
     logger = logging.getLogger(__file__)
     logging.basicConfig(level=logging.DEBUG)
     print(__file__)
     # gui(__file__)
+    doc(__file__)

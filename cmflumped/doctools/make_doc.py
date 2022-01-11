@@ -18,11 +18,18 @@ def Name(setup):
     return setup.__module__.capitalize()
 
 
+def get_doc_class(setup, classname):
+    return getattr(sys.modules[setup.__module__], classname, None)
+
+
+def get_class_doc(setup, cls):
+    return dedent(cls.__doc__.format(name=name(setup), Name=Name(setup))).strip() + '\n'
+
+
 def write_doc_text(setup: object, classname: str, homedir: Path):
 
-    cls = getattr(sys.modules[setup.__module__], classname, None)
-    if cls:
-        doc = dedent(cls.__doc__.format(name=name(setup), Name=Name(setup))).strip() + '\n'
+    if cls := get_doc_class(setup, classname):
+        doc = get_class_doc(setup, cls)
         cname = f'{setup.__module__}.{classname.lower()}'
         path = homedir / f'{cname}.rst'
         path.write_text(doc, encoding='utf-8')
@@ -34,10 +41,9 @@ def write_doc_text(setup: object, classname: str, homedir: Path):
 
 
 def write_result_text(setup: object, homedir: Path, classname='Result'):
-    cls = getattr(sys.modules[setup.__module__], classname, None)
-    if cls:
 
-        with cls(setup) as r:
+    if cls := get_doc_class(setup, classname):
+        with cls(setup, outputdir=homedir) as r:
             doc = str(r)
             cname = f'{setup.__module__}.{classname.lower()}'
             path = homedir / f'{cname}.rst'
@@ -47,7 +53,6 @@ def write_result_text(setup: object, homedir: Path, classname='Result'):
             r.timeseries_plot()
     else:
         logger.warning(f'No class <{classname}> found in {setup.__module__}')
-
 
 
 def index(setup, doc_dir: Path):
@@ -120,6 +125,7 @@ def create_output_directory(setup):
     shutil.copy(conf_py, home)
 
     return home
+
 
 def create_rst(setup)->Path:
     # rst = describe.rst(setup)
