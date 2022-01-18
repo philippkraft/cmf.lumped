@@ -10,14 +10,14 @@ Ein 2-Speicher lumped Modell für das Einzugsgebiet der Fulda
 """
 import cmf
 import spotpy
-from spotpy.parameter import Uniform
+from spotpy.parameter import Uniform, Constant
 import numpy as np
 import datetime
 import importlib.util
 import os
 import sys
 from .dataprovider import DataProvider
-
+from .doctools import DocClass
 
 def load_module_from_path(path_to_module:str):
     """
@@ -63,7 +63,6 @@ def get_model_class(path_to_module:str, classname=None):
         raise ValueError(f'Module "{path_to_module}" has no class that derives from cmflumped.BaseModel')
 
 
-
 def u(vmin, vmax, default=None, doc=None):
     """
     Creates a uniform distributed parameter
@@ -75,7 +74,13 @@ def u(vmin, vmax, default=None, doc=None):
     """
     if default is None:
         default = 0.5 * (vmin + vmax)
-    return Uniform(vmin, vmax, optguess=default, doc=doc)
+    return Uniform(vmin, vmax, optguess=default, doc=doc, minbound=vmin, maxbound=vmax)
+
+
+def constant(vmin, vmax, default=None, doc=None):
+    if default is None:
+        default = 0.5 * (vmin + vmax)
+    return Constant(default, optguess=default, minbound=vmin, maxbound=vmax, doc=doc)
 
 
 class BaseParameters:
@@ -84,8 +89,15 @@ class BaseParameters:
         # A magic method for simple use of this object
         return spotpy.parameter.get_parameters_from_setup(self)
 
+    @classmethod
+    def to_string(cls):
+        params = cls()
+        return cls.__doc__ + '\n'.join(
+            f':{p.name}: [{p.minbound:0.4g}..{p.maxbound:0.4g}] {p.description}'
+            for p in spotpy.parameter.get_parameters_from_setup(params)
+        )
 
-class BaseModel:
+class BaseModel(DocClass):
     """
     The template for
     """
@@ -94,11 +106,12 @@ class BaseModel:
     calibration_start = 2000
     validation_start = 2010
 
-    def __init__(self, dataprovider: DataProvider):
+    def __init__(self, dataprovider: DataProvider, name: str = None):
         """
         Creates the basic structure of the model
         """
         self.data = dataprovider
+        self.name = name or self.__module__
         self.project = cmf.project()
         self.cell: cmf.Cell = self.project.NewCell(0, 0, 0, 1000)
 
@@ -173,7 +186,7 @@ class BaseModel:
         return self.outlet.waterbalance(t)
 
     def __str__(self):
-        return self.__module__
+        return self.name
 
     def simulation(self, vector):
         """
@@ -182,16 +195,16 @@ class BaseModel:
         :param vector:
         :return:
         """
-        self.verbose = False
         result = self.create_result_structure()
         duration = datetime.datetime.now()
 
         for t in self.iterate(vector):
             self.fill_result_structure(result, t)
-
+        result_array = np.array(result)
         if self.verbose:
+            print('objective: NSE_c={:0.4g}, NSE_v={:0.4g}, PBIAS_c={:0.4g}, PBIAS_v={:0.4g}'.format(*self.objectivefunction(result_array, self.evaluation())))
             print('duration:', datetime.datetime.now() - duration)
-        return np.array(result)
+        return result_array
 
     def evaluation(self):
         """
@@ -235,8 +248,6 @@ class BaseModel:
 
         return [nse_c, nse_v, pbias_c, pbias_v]
 
-    def describe(self):
-        return cmf.describe(self.project)
 
     @property
     def begin(self):

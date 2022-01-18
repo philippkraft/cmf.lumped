@@ -1,1 +1,2 @@
-from .make_doc import create_rst, do_sphinx
+from .make_doc import Documentation
+from .doc_base import DocClass, DocFunction

@@ -14,14 +14,17 @@ def gui(model):
         mgui.show()
 
 
-def result(model):
+def result(*setups):
     """
     Loads and analyses the result file from cmf.lumped run model.py 10000
     """
-    m = _get_model_class(model)()
-    Result = _get_model_class(model, 'Result')
-    with Result(m) as r:
-        print(r)
+    from .doctools.result import BaseResult
+    for model in setups:
+        m = _get_model_class(model)()
+        r: BaseResult
+        Result = _get_model_class(model, 'Result')
+        with Result(m, '.') as r:
+            r.save(verbose=True)
 
 
 def doc(*setups, in_browser=False):
@@ -30,13 +33,16 @@ def doc(*setups, in_browser=False):
     Usage: cmflumped doc <model.py>
            <model.py>: The Python file containing the model
     """
-    from cmflumped.doctools import create_rst, do_sphinx
+    import matplotlib as mpl
+    mpl.use('Agg')
+    from cmflumped.doctools import Documentation
     # Schreibe die rst-Dateien
     for setup in setups:
         model = _get_model_class(setup)()
-        doc_dir = create_rst(model)
+        docu = Documentation(model)
+        docu.make_rst()
         # Erzeuge die HTML-Dokumentation
-        build_dir = do_sphinx(model, doc_dir)
+        build_dir = docu.compile_html()
 
     if in_browser:
         import webbrowser
@@ -71,6 +77,7 @@ def run(model, runs=None, sampler='lhs'):
     """
     from cmflumped.spotpy_helper import sample
     m: _BaseModel = _get_model_class(model)()
+    m.verbose = not runs
     if runs:
         n = int(runs)
         sample(m, n, sampler, save_threshold=0.0)

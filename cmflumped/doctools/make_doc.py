@@ -4,163 +4,145 @@ from pathlib import Path
 from textwrap import dedent
 import cmf
 import shutil
-import importlib
+import re
 import sys
 from sphinx.cmd.build import make_main as sphinx_make
 from logging import getLogger
 logger = getLogger(__name__)
 
+
 def name(setup):
-    return setup.__module__
+    return setup.name
 
 
 def Name(setup):
-    return setup.__module__.capitalize()
+    return setup.name.capitalize()
 
 
 def get_doc_class(setup, classname):
     return getattr(sys.modules[setup.__module__], classname, None)
 
 
-def get_class_doc(setup, cls):
-    return dedent(cls.__doc__.format(name=name(setup), Name=Name(setup))).strip() + '\n'
+class Implementation:
+
+    def __init__(self, setup):
+        self.setup = setup
+
+    def parameter_text(self):
+        cls = get_doc_class(self.setup, 'Parameters')
+        return (
+                dedent(cls.__doc__) + '\n' +
+                '\n'.join(
+                    f':{p.name}: [{p.minbound:0.4g}..{p.maxbound:0.4g}] {p.description}'
+                    for p in self.setup.parameters
+                )
+        )
+
+    def model_text(self):
+        cls = type(self.setup)
+        return cls.describe(self.setup)
+
+    def project_text(self):
+        return cmf.describe(self.setup.project)
+
+    def __repr__(self):
+        return f'Implementation({self.setup})'
+
+    def __str__(self):
+        return '\n'.join((self.parameter_text(), self.model_text(), self.project_text()))
 
 
-def write_doc_text(setup: object, classname: str, homedir: Path):
+class Documentation:
 
-    if cls := get_doc_class(setup, classname):
-        doc = get_class_doc(setup, cls)
-        cname = f'{setup.__module__}.{classname.lower()}'
-        path = homedir / f'{cname}.rst'
-        path.write_text(doc, encoding='utf-8')
-        imgpath = homedir.parent / (cname + '.png')
-        if imgpath.exists():
-            shutil.copy(imgpath, homedir)
-    else:
-        logger.warning(f'No class <{classname}> found in {setup.__module__}')
+    def copy_conf_py(self):
+        """
+        Copies the conf.py file needed to compile the documentation from the sources,
+        if it is not present in the target directory
+        """
+        if not (self.homedir / 'conf.py').exists():
+            srcdir = Path(__file__).parent
+            conf_py = srcdir / 'conf.py'
+            shutil.copy(conf_py, self.homedir)
 
+    def __init__(self, setup, homedir: Path = None):
+        self.setup = setup
+        self.homedir = homedir or Path(f'{name(self.setup)}-docs')
+        self.homedir.mkdir(parents=True, exist_ok=True)
 
-def write_result_text(setup: object, homedir: Path, classname='Result'):
+    def copy_figures(self, text):
+        figures = re.findall(r'\.\. figure:: (.*)', text)
+        for fig in figures:
+            if (img := self.homedir.parent / fig).exists():
+                shutil.copy(img, self.homedir)
 
-    if cls := get_doc_class(setup, classname):
-        with cls(setup, outputdir=homedir) as r:
-            doc = str(r)
-            cname = f'{setup.__module__}.{classname.lower()}'
-            path = homedir / f'{cname}.rst'
-            path.write_text(doc, encoding='utf-8')
-            r.outputdir = str(homedir)
-            r.dotty_plot()
-            r.timeseries_plot()
-    else:
-        logger.warning(f'No class <{classname}> found in {setup.__module__}')
+    def write_doc_text(self, classname: str):
 
+        if cls := get_doc_class(self.setup, classname):
+            doc = cls.describe(self.setup)
+            self.write_text(classname.lower(), doc)
+            self.copy_figures(doc)
+        else:
+            logger.warning(f'No class <{classname}> found in {self.setup.name}')
 
-def index(setup, doc_dir: Path):
-    if (doc_dir / 'index.rst').exists():
-        return (doc_dir / 'index.rst').read_text(encoding='utf-8')
-    elif (doc_dir.parent / 'index.rst').exists():
-        return (doc_dir.parent / 'index.rst').read_text(encoding='utf-8') + \
-               f'\n   {Name(setup)} <{name(setup)}.main>'
-    else:
-        return f'''
-Modelling results
-==============================
+    def write_text(self, filename: str, text: str, module_prefix=True):
+        if module_prefix:
+            path = self.homedir / f'{self.setup.name}.{filename}.rst'
+        else:
+            path = self.homedir / f'{filename}.rst'
 
-.. toctree::
-   :maxdepth: 2
-   
-   {Name(setup)} <{name(setup)}.main>
+        with path.open('w', encoding='utf-8') as f:
+            f.write(str(text))
 
-'''
+    def index_text(self):
+        """
+        Uses either an existing index.rst, or copies ../index.rst to the current source directory and extends it
+        with a link to the current model. If neither exists, a base index.rst is created.
+        """
+        if (self.homedir / 'index.rst').exists():
+            return (self.homedir / 'index.rst').read_text(encoding='utf-8')
+        elif (self.homedir.parent / 'index.rst').exists():
+            return (self.homedir.parent / 'index.rst').read_text(encoding='utf-8') + \
+                   f'\n   {Name(self.setup)} <{name(self.setup)}.main>'
+        else:
+            return dedent(f'''
+                Modelling results
+                ==============================
 
-def main_text(setup):
-    toctree = '.. toctree::\n   ' + '\n   '.join(
-        f'{name(setup)}.{chapter}'
-        for chapter in ('concept', 'implementation', 'result')
-    )
-    mod = sys.modules.get(setup.__module__, None)
-    mod_doc = getattr(mod, '__doc__', '') or ''
-    return mod_doc + '\n' + toctree
+                .. toctree::
+                   :maxdepth: 2
 
+                   {Name(self.setup)} <{name(self.setup)}.main>
 
-def impl_text(setup):
-    parameter_text = '\n'.join(
-        f':{p.name}: [{p.minbound:0.4g}..{p.maxbound:0.4g}] {p.description}'
-        for p in setup.parameters
-    )
+                ''')
 
-    cmf_text = cmf.describe(setup.project)
+    def main_text(self):
+        toctree = '.. toctree::\n   ' + '\n   '.join(
+            f'{name(self.setup)}.{chapter}'
+            for chapter in ('concept', 'implementation', 'result', 'discussion', 'bibliography')
+        )
+        mod = sys.modules.get(self.setup.name, None)
+        mod_doc = getattr(mod, '__doc__', '') or ''
+        return mod_doc + '\n' + toctree
 
-    return dedent(f'''
-Implementierung des Konzepts
--------------------------------
+    def make_rst(self):
+        self.write_doc_text('Concept')
+        self.write_text('implementation', str(Implementation(self.setup)))
+        self.write_doc_text('Result')
+        self.write_doc_text('Discussion')
+        self.write_doc_text('Bibliography')
+        self.write_text('main', self.main_text())
+        self.write_text('index', self.index_text(), module_prefix=False)
+        self.copy_conf_py()
+        return self
 
-Modell-Parameter
-.................
-
-{parameter_text}
-
-Die Modell-Klasse
-.................
-
-.. autoclass:: {setup.__module__}.{setup.__class__.__name__}
-    :members:
-
-Das CMF-Projekt
-...................
-
-{cmf_text}
-
-    ''')
-
-
-def create_output_directory(setup):
-    """Creates and prepares the directory for output"""
-    home = Path(f'{name(setup)}-docs').absolute()
-    home.mkdir(parents=True, exist_ok=True)
-
-    src = Path(__file__).parent
-    conf_py = src / 'conf.py'
-
-    shutil.copy(conf_py, home)
-
-    return home
+    def compile_html(self):
+        """
+        Erstellt aus den rst-Dateien die html-Dokumentation
+        """
+        builddir = self.homedir / '_build'
+        args = ['-M', 'html', str(self.homedir), str(builddir)]
+        sphinx_make(args)
+        return builddir
 
 
-def create_rst(setup)->Path:
-    # rst = describe.rst(setup)
-    home = create_output_directory(setup)
 
-    # (home / f'{name(setup)}.concept.rst').write_text(concept(setup), encoding='utf-8')
-    write_doc_text(setup, 'Concept', home)
-    write_result_text(setup, home)
-    index_path = home / 'index.rst'
-    index_path.write_text(index(setup, home), encoding='utf-8')
-    mt = main_text(setup)
-    it = impl_text(setup)
-    (home / f'{name(setup)}.main.rst').write_text(mt, encoding='utf-8')
-    (home / f'{name(setup)}.implementation.rst').write_text(it, encoding='utf-8')
-    return home
-
-def do_sphinx(setup, home: Path):
-    """
-    Erstellt aus den rst-Dateien die html-Dokumentation
-    """
-    builddir = home / '_build'
-    args = ['-M', 'html', str(home), str(builddir)]
-    sphinx_make(args)
-    return builddir
-
-
-if __name__ == '__main__':
-
-    sys.path.insert(0, '.')
-
-    module = importlib.import_module('.' + sys.argv[1], 'models')
-
-    # Erzeuge das Modell
-    setup = module.Modell()
-    # Schreibe die rst-Dateien
-    create_rst(setup)
-    # Erzeuge die HTML-Dokumentation
-    builddir = do_sphinx(setup)
