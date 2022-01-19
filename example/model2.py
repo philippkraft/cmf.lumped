@@ -1,3 +1,15 @@
+"""
+CMF-Model for Nidder / Glauberg
+===============================
+
+by Philipp Kraft
+
+last modification: 2021-01-21 09:27
+
+This text is from the doc-string of the Model's module
+"""
+
+
 import os
 import cmf
 from cmflumped.basemodel import BaseParameters, u, BaseModel
@@ -15,16 +27,11 @@ class Concept:
     surface runoff is triggered by infiltration excess and / or saturation
     excess.
 
-    The implementation idea is shown in :numref:`fig-model2-concept`
+    The implementation idea is shown in {fig_ref:concept}, and is based on the model id 13
+    from {bib_ref:MARRMoT},
 
-    .. _fig-model2-concept:
 
-    .. figure:: model2.concept.png
-        :width: 800px
-        :align: center
-        :figclass: align-center
-
-        A simple figure showing the connections in the model
+    {figure:concept;A simple figure showing the connections in the model}
 
     """
     ...
@@ -87,7 +94,15 @@ class Parameters(BaseParameters):
 
 class Model2(BaseModel):
     """
-    A simple Lumped model with snow, soil storage and groundwater
+    The model class
+    ...............
+
+    This class implements the specific cmf model using the following methods
+
+    {Class}
+
+    The CMF-Project
+    ...............
 
     """
 

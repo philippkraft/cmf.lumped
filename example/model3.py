@@ -252,17 +252,6 @@ class Result(BaseResult):
         """
         super().__init__(model, outputdir=outputdir)
 
-    def __str__(self):
-        best_run = self.best_run_id()
-        like1, like2, like3, like4 = self.like(best_run)
-        return self.format_doc_string(
-            like1=like1, like2=like2, like3=like3, like4=like4,
-            CStart=self.model.calibration_start,
-            CEnd=self.model.validation_start - 1,
-            VStart=self.model.validation_start,
-            VEnd=self.model.data.end.year
-        )
-
 
 class Discussion(DocClass):
     """

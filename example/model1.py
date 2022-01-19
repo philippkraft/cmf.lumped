@@ -11,8 +11,9 @@ This text is from the doc-string of the Model's module
 
 import os
 import cmf
-from cmflumped.basemodel import BaseParameters, u, BaseModel
+from cmflumped.basemodel import BaseParameters, u, BaseModel, DocClass
 from cmflumped.dataprovider import load_csv
+from cmflumped.doctools.result import BaseResult
 
 
 # The concept class is only used for documentation purposes.
@@ -24,24 +25,23 @@ class Concept:
     Using the concept of a simple overflowing bucket,
     the model does not generate any baseflow.
 
-    It is based on ...
+    The implementation idea is shown in {fig_ref:concept}, and is based on the model id 01
+    from {bib_ref:MARRMoT}, the Collie River Basin 1
 
-    bla...
 
-    The implementation idea is shown in :numref:`fig_{name}_concept`
-
-    .. _fig_{name}_concept:
-    .. figure:: {name}.concept.png
+    {figure:concept;A simple figure showing the connections in the model}
 
     """
-    ...
+
 
 
 class Parameters(BaseParameters):
     """
-    A helper class to define the parameters of the model
+    Implementation
+    ---------------
 
-    Create class owned fields as parameters
+    Model parameters
+    ................
     """
     infiltration_capacity = u(
         0, 50, 10,
@@ -67,10 +67,15 @@ class Parameters(BaseParameters):
 
 class Model1(BaseModel):
     """
-    CMF-Model for Nidder / Glauberg
+    The model class
+    ...............
 
-    A simple single storage model with infiltration and saturation excess
-    but no baseflow
+    This class implements the specific cmf model using the following methods
+
+    {Class}
+
+    The CMF-Project
+    ...............
     """
     verbose = True
     calibration_start = 2000
@@ -174,6 +179,62 @@ class Model1(BaseModel):
         """
         return self.outlet.waterbalance(t)
 
+class Result(BaseResult):
+    """
+    Results for {module}
+    ======================================
+
+    Nash-Sutcliffe-Efficiancy and PBIAS for the run with the
+    lowest NSE during calibration period
+
+    :Calibration ({setup.calibration_start}-{setup.validation_start}):  NSE={NSE_c:3g}, PBIAS={PBIAS_c:3g}%
+    :Validation ({setup.validation_start}-{setup.data.end.year}):  NSE={NSE_v:3g}, PBIAS={PBIAS_v:3g}%
+
+    With a rejection criteria of NSE < {threshold:0.4g}
+    {n} runs have been accepted.
+
+    The modelled timeseries of runoff is shown in {fig_ref:timeseries}.
+
+    {figure:timeseries;
+        Modelled vs. observed runoff in mm/day.
+
+        Red line - best model run, yellow area - 5th - 95th percentile area of {n} runs
+        with an NSE > {threshold:0.4g}, black dotted line is the observed runoff
+    }
+
+    The distribution of parameters is shown in {fig_ref:dotty}
+
+    {figure:dotty;The parameter distributions of the accepted parameter sets}
+    """
+
+    def __init__(self, model, outputdir='.'):
+        """
+        :param doc_dir: The directory to save the figures
+        """
+        super().__init__(model, outputdir=outputdir)
+
+
+class Discussion(DocClass):
+    """
+    Discussion
+    ----------
+
+    .. todo::
+       {module}: Diskussion beschreiben, Namen für Vergleich austauschen
+
+    Die Ergebnisse aus {fig_ref:timeseries} sind immer noch besser als von Philipp {fig_ref:timeseries;philipp}.
+    Das liegt daran, ...
+
+    """
+
+class Bibliography(DocClass):
+    """
+    References
+    ----------
+
+    {bib_item:MARRMoT;https://doi.org/10.5194/gmd-12-2463-2019;Knoben et al: Modular Assessment of Rainfall–Runoff Models Toolbox (MARRMoT) v1.2}
+
+    """
 
 if __name__ == '__main__':
     from cmflumped import commands as cmd
