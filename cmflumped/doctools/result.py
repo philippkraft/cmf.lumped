@@ -140,8 +140,10 @@ class BaseResult(DocClass):
         p95 = np.percentile(data, 95, 0)
 
         fig = plt.figure(figsize=(16, 8), dpi=100)
-        time = np.arange(np.datetime64('1991', 'D'), np.datetime64('2019', 'D'))
+        time = np.arange(self.model.begin, self.model.end + self.model.data.step, self.model.data.step)
+
         plt.fill_between(time, p5, p95, facecolor='#ffff00', edgecolor='none', label='Modelled uncertainty')
+
         plt.plot(time, self.obs, 'k-', label='Observed')
         plt.plot(time, best, 'r-', label='Best model')
         ax = plt.gca()
