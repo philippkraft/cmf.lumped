@@ -32,7 +32,7 @@ setuptools.setup(
     url="https://github.com/philippkraft/cmf.lumped",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Development Status :: 3 - Alpha"
+        "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
