@@ -7,7 +7,7 @@ class DataProvider:
     Holds the forcing and calibration data
     """
 
-    def __init__(self, data, Q='Q', P='P', E='ETpot', Tmin=None, Tmax=None):
+    def __init__(self, data, Q='Q', P='P', E='ETpot', Tmin=None, Tmax=None, name='data', lat=51):
         """
         Makes a new dataprovider for a lumped cmf model
 
@@ -24,6 +24,8 @@ class DataProvider:
         self.begin: dt.datetime = data.index[0].to_pydatetime()
         self.end: dt.datetime = data.index[-1].to_pydatetime()
         self.step: dt.timedelta = data.index[1].to_pydatetime() - self.begin
+        self.name = name
+        self.lat = lat
 
         def a2ts(a):
             """Converts an array column to a timeseries"""
@@ -49,12 +51,12 @@ class DataProvider:
         :param project: A cmf.project
         :return: rainstation, meteo
         """
-        rainstation = project.rainfall_stations.add('Glauburg', self.P, (0, 0, 0))
+        rainstation = project.rainfall_stations.add(self.name, self.P, (0, 0, 0))
 
         project.use_nearest_rainfall()
 
         # Temperaturdaten
-        meteo = project.meteo_stations.add_station('Glauburg', (0, 0, 0))
+        meteo = project.meteo_stations.add_station(self.name, (0, 0, 0), latitude=self.lat)
         if self.Tmin:
             meteo.Tmin = self.Tmin
         else:

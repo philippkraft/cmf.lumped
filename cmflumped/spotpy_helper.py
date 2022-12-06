@@ -26,12 +26,12 @@ def get_runs(default=1):
         return default
 
 
-def sample(model, runs, algname='lhs', save_threshold=None):
+def sample(model, runs, algname='lhs', save_threshold=None, dbformat='hdf5'):
     runs = get_runs(runs)
     alg = getattr(spotpy.algorithms, algname)
     sampler = alg(
         model, sim_timeout=600,
-        dbname=str(model), dbformat='hdf5', parallel=parallel(), save_threshold=save_threshold)
+        dbname=str(model), dbformat=dbformat, parallel=parallel(), save_threshold=save_threshold)
     print(spotpy.describe.sampler(sampler))
     print(spotpy.describe.setup(model))
     sampler.sample(runs)

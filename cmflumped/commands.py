@@ -60,7 +60,7 @@ def descr(model):
     print(cmf.describe(m.project))
 
 
-def run(model, runs=None, sampler='lhs'):
+def run(model, runs=None, sampler='lhs', dbformat='hdf5'):
     """
     Runs the model
     Usage: cmf.lumped run <model.py> [runs] [sampler]
@@ -80,7 +80,7 @@ def run(model, runs=None, sampler='lhs'):
     m.verbose = not runs
     if runs:
         n = int(runs)
-        sample(m, n, sampler, save_threshold=0.0)
+        sample(m, n, sampler, save_threshold=0.0, dbformat=dbformat)
     else:
         from spotpy.parameter import create_set
         p = create_set(m, 'optguess')

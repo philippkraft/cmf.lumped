@@ -236,6 +236,7 @@ class Bibliography(DocClass):
 
     """
 
+
 if __name__ == '__main__':
     from cmflumped import commands as cmd
     # m = Model1()
