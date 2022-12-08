@@ -126,7 +126,7 @@ class BaseResult(DocClass):
 
     def timeseries_plot(self):
         """
-        Plots the result timeseries with the p5 to p95 uncertainty interval
+        Plots the result timeseries with the p5 to p95 uncertainty interval with blues
         """
         import pylab as plt
         nse = np.array(self.data.cols.like1)
@@ -142,13 +142,14 @@ class BaseResult(DocClass):
         fig = plt.figure(figsize=(16, 8), dpi=100)
         time = np.arange(self.model.begin, self.model.end + self.model.data.step, self.model.data.step)
 
-        plt.fill_between(time, p5, p95, facecolor='#ffff00', edgecolor='none', label='Modelled uncertainty')
+        plt.fill_between(time, p5, p95, facecolor='b', edgecolor='none', label='Modelled uncertainty', alpha=0.3)
 
         plt.plot(time, self.obs, 'k-', label='Observed')
-        plt.plot(time, best, 'r-', label='Best model')
+        plt.plot(time, best, 'b-', label='Best model')
         ax = plt.gca()
         ax.xaxis_date()
-        ax.set_xlim(np.datetime64(f'{self.model.validation_start}-01-01'))
+        ax.set_xlim(self.model.begin)
+        plt.axvline(np.datetime64(f'{self.model.calibration_start}-01-01'), ls='--', c='k', lw=3, alpha=0.5)
         plt.axvline(np.datetime64(f'{self.model.validation_start}-01-01'), ls='--', c='k', lw=3, alpha=0.5)
         plt.title('{} NSE>{:0.2f}, n={}'.format(self.name.capitalize(), self.threshold, take.sum()),
                   fontsize=24)
