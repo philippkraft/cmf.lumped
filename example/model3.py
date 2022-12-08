@@ -277,15 +277,13 @@ class Bibliography(DocClass):
 
 
 if __name__ == '__main__':
-    import logging
-    logger = logging.getLogger(__file__)
-    logging.basicConfig(level=logging.DEBUG)
-    print(__file__)
-    m = Model3('model3')
-    from cmflumped.doctools import Documentation
-    docu = Documentation(m)
-    docu.make_rst()
-    docu.compile_html()
+    #import cmflumped.commands as cmd
+
+    # cmd.run(__file__, runs=1000, sampler='lhs')
+    from cmflumped.__main__ import main
+    import sys
+    sys.argv.insert(2, __file__)
+    main()
 
 
 

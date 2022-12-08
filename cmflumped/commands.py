@@ -2,6 +2,14 @@ from .basemodel import get_model_class as _get_model_class
 from .basemodel import BaseModel as _BaseModel
 
 
+def help(*args, **kwargs):
+    print('Runs a custom build lumped cmf model')
+    for n, f in commands.items():
+        print()
+        print(f'cmf.lumped {n} ...')
+        print(f.__doc__)
+
+
 def gui(model):
     """
     Opens a gui to run and explore the model
@@ -60,7 +68,7 @@ def descr(model):
     print(cmf.describe(m.project))
 
 
-def run(model, runs=None, sampler='lhs', dbformat='hdf5'):
+def run(model, runs=None, sampler='lhs', dbformat='hdf5', parallel=None):
     """
     Runs the model
     Usage: cmf.lumped run <model.py> [runs] [sampler]
@@ -80,7 +88,7 @@ def run(model, runs=None, sampler='lhs', dbformat='hdf5'):
     m.verbose = not runs
     if runs:
         n = int(runs)
-        sample(m, n, sampler, save_threshold=0.0, dbformat=dbformat)
+        sample(m, n, sampler, save_threshold=0.0, dbformat=dbformat, parallel=parallel)
     else:
         from spotpy.parameter import create_set
         p = create_set(m, 'optguess')
