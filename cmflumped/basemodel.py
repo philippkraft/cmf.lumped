@@ -173,7 +173,7 @@ class BaseModel(DocClass):
         self.create_connections(p)
         self.initial_values(p)
 
-        solver = cmf.CVodeIntegrator(self.project, 1e-9)
+        solver = cmf.CVodeDense(self.project, 1e-9)
         solver.use_OpenMP = False
         return solver.run(self.data.begin, self.data.end, cmf.day)
 

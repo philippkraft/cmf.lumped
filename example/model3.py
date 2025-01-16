@@ -63,7 +63,7 @@ class Parameters(BaseParameters):
     Q0 = u(
         0.01, 50, default=10,
         doc='Percolation rate in :math:`mm/day` when the soil stores contains' +
-            ':math:`V_0 \cdot C [mm]` water'
+            ':math:`V_0 \\cdot C [mm]` water'
     )
     V0 = u(
         0.01, 1.0, default=0.5,
@@ -143,7 +143,7 @@ class Model3(BaseModel):
 
         cmf.Snowfall(self.cell.snow, self.cell)
         cmf.Rainfall(self.cell.surfacewater, self.cell)
-        cmf.SimpleTindexSnowMelt(self.cell.snow, self.cell.surfacewater,
+        cmf.TempIndexSnowMelt(self.cell.snow, self.cell.surfacewater,
                                  self.cell, rate=p.snow_melt_rate)
 
     def create_surface_runoff(self, p: Parameters):
@@ -154,7 +154,7 @@ class Model3(BaseModel):
         # Infiltration
         cmf.ConceptualInfiltration(self.soil, self.cell.surfacewater, W0=p.infiltration_w0)
         # Route infiltration / saturation excess to outlet
-        cmf.waterbalance_connection(self.cell.surfacewater, self.outlet)
+        cmf.WaterbalanceFlux(self.cell.surfacewater, self.outlet)
 
     def set_soil_capacity(self, p: Parameters):
         """
@@ -277,13 +277,13 @@ class Bibliography(DocClass):
 
 
 if __name__ == '__main__':
-    #import cmflumped.commands as cmd
-
+    import cmflumped.commands as cmd
+    cmd.gui(__file__)
     # cmd.run(__file__, runs=1000, sampler='lhs')
-    from cmflumped.__main__ import main
-    import sys
-    sys.argv.insert(2, __file__)
-    main()
+    #from cmflumped.__main__ import main
+    # import sys
+    #sys.argv.insert(2, __file__)
+    #main()
 
 
 

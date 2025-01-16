@@ -144,9 +144,9 @@ class Model1(BaseModel):
         Creates the connections and parameterizes the storages of the model
         """
         # Infiltration
-        cmf.SimpleInfiltration(self.soil, self.cell.surfacewater, W0=p.infiltration_w0)
+        cmf.ConceptualInfiltration(self.soil, self.cell.surfacewater, W0=p.infiltration_w0)
         # Route infiltration / saturation excess to outlet
-        cmf.waterbalance_connection(self.cell.surfacewater, self.outlet)
+        cmf.WaterbalanceFlux(self.cell.surfacewater, self.outlet)
 
         capacity = self.set_soil_capacity(p)
 
@@ -242,6 +242,6 @@ if __name__ == '__main__':
     # m = Model1()
     # Starts the graphic user interface for manual calibration.
     # In Spyder: Make sure to run this in an external terminal (Ctrl + F6)
-    cmd.doc(__file__, in_browser=True)
+    cmd.gui(__file__) #, in_browser=True)
     
 

@@ -196,6 +196,6 @@ class Fluxogram:
 
         fa = FuncAnimation(self.axis.figure, func=self.update,
                            init_func=self.init_plot,
-                           frames=integration, blit=False,
+                           frames=integration, blit=True,
                            interval=1, repeat=False)
         return fa

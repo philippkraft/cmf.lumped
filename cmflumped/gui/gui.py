@@ -23,9 +23,9 @@ class GUI:
 
         logger.debug('init gui')
         self.fig = plt.figure(type(setup).__name__)
-        self.time_ax = plt.axes([0.05, 0.1, 0.9, 0.4])
+        self.time_ax = plt.axes((0.05, 0.1, 0.9, 0.4))
 
-        self.flux_ax = plt.axes([0.05, 0.55, 0.5, 0.4], facecolor='0.8')
+        self.flux_ax = plt.axes((0.05, 0.55, 0.5, 0.4), facecolor='0.8')
         self.fluxogram = Fluxogram(setup.outlet, self.flux_ax)
         self.fluxogram.init_plot(3)
         self.button_play = Widget([0.85, 0.01, 0.04, 0.03], Button, '\u25B6', on_clicked=self.animate)
@@ -140,7 +140,7 @@ class GUI:
         def cmf_time_to_ms(t):
             return (t - cmf.Time(1, 1, 1970)).AsMilliseconds()
         outflow = [self.setup.output(self.setup.begin)]
-        timeline_ms = [cmf_time_to_ms(cmf.AsCMFtime(self.setup.begin))]
+        timeline_ms = [cmf_time_to_ms(cmf.datetime_to_cmf(self.setup.begin))]
 
         def update(t):
             outflow.append(self.setup.output(t))

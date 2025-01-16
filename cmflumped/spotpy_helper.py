@@ -2,6 +2,7 @@ import spotpy
 import spotpy.describe
 import os
 
+
 def parallel_auto():
     """
     Returns 'mpi', if this code runs with MPI, else returns 'seq'

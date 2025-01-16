@@ -10,3 +10,4 @@ spotpy==1.5.14
 sphinx>=4.0.0
 networkx>=2.4
 pyyaml
+setuptools
