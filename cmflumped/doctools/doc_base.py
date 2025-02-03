@@ -62,4 +62,4 @@ class DocClass:
             dcf.kwargs['classname'] = classname
             dcf.kwargs['setup'] = setup
 
-        return template.format(setup=setup, module=module, classname=classname, **docfunctions, **kwargs)
+        return template.format(setup=setup, module=module, name=classname, **docfunctions, **kwargs)
