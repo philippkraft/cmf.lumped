@@ -3,8 +3,20 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open("requirements.txt") as fh:
-    requirements = fh.readlines()
+requirements = """
+wheel
+pandas>=1.2.5
+matplotlib>=3.4.2
+scipy>=1.7.0
+click>=7.1.2
+tables>=3.6.1
+openpyxl>=3.0.0
+cmf>=2.0.0
+spotpy
+sphinx>=4.0.0
+networkx>=2.4
+pyyaml
+setuptools""".split('\n')
 
 
 def get_version(rel_path):

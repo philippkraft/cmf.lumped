@@ -62,6 +62,7 @@ class BaseResult(DocClass):
         self.dotty_plot()
         self.timeseries_plot()
         data = self.result_summary()
+        data['parameters'] = self.best_parameters()
         if verbose:
             print(data)
         with open(self.filename('result', 'yml'), 'w') as f:
@@ -162,6 +163,12 @@ class BaseResult(DocClass):
         """Returns the 4 objective functions for a model run"""
         return [self.data.col(colname)[row] for colname in self.data.colnames if colname.startswith('like')]
 
+    def params(self, row):
+        """Returns the 4 objective functions for a model run"""
+        return {
+            colname[3:]: float(self.data.col(colname)[row]) for colname in self.data.colnames if colname.startswith('par')
+        }
+
     def best_run_id(self):
         """Returns the row number of the best run"""
         return np.array(self.data.cols.like1[:]).argmax()
@@ -178,3 +185,6 @@ class BaseResult(DocClass):
             PBIAS_c=float(like[2]),
             PBIAS_v=float(like[3]),
         )
+    def best_parameters(self) -> dict:
+        best_run_id = self.best_run_id()
+        return self.params(best_run_id)

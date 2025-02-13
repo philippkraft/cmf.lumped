@@ -54,7 +54,7 @@ def doc(*setups, in_browser=False):
 
     if in_browser:
         import webbrowser
-        webbrowser.open((build_dir / 'html' / 'index.html').as_uri())
+        webbrowser.open((build_dir.absolute() / 'html' / 'index.html').as_uri())
 
 
 def descr(model):
