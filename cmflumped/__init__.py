@@ -1,3 +1,3 @@
 from .basemodel import BaseModel, u, BaseParameters
 
-__version__ = '2025.2.13'
+__version__ = '2026.2.11'

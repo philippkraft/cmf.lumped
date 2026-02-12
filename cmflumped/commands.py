@@ -35,11 +35,14 @@ def result(*setups):
             r.save(verbose=True)
 
 
-def doc(*setups, in_browser=False):
+def doc(*setups, in_browser=False, **kwargs):
     """
     Creates documentation files for the model
     Usage: cmflumped doc <model.py>
            <model.py>: The Python file containing the model
+           Options:
+                in_browser: If True, opens the generated documentation in the default web browser after compilation
+                project="...": The project name to be used in the documentation (passed to conf.py)
     """
     import matplotlib as mpl
     mpl.use('Agg')
@@ -47,7 +50,7 @@ def doc(*setups, in_browser=False):
     # Schreibe die rst-Dateien
     for setup in setups:
         model = _get_model_class(setup)()
-        docu = Documentation(model)
+        docu = Documentation(model, **kwargs)
         docu.make_rst()
         # Erzeuge die HTML-Dokumentation
         build_dir = docu.compile_html()

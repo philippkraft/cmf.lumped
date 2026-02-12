@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import Optional
 from spotpy import describe
 from pathlib import Path
 from textwrap import dedent
@@ -61,13 +62,37 @@ class Documentation:
         """
         if not (self.homedir / 'conf.py').exists():
             srcdir = Path(__file__).parent
-            conf_py = srcdir / 'conf.py'
-            shutil.copy(conf_py, self.homedir)
+            conf_text = (srcdir / 'conf.py').read_text(encoding='utf-8')
+            try:
+                with (self.homedir / 'conf.py').open('w', encoding='utf-8') as f:
+                    f.write(conf_text.format(**self.conf_kwargs))
+            except Exception as e:
+                logger.error(f'Could not format conf.py: {e}')
+                logger.error(f'Provided kwargs: {self.conf_kwargs}')
+                logger.error(conf_text)
+                raise
 
-    def __init__(self, setup, homedir: Path = None):
+    def __init__(self, setup, homedir: Optional[Path]=None, **kwargs):
+        """
+        Docstring for __init__
+        
+        :param setup: The module containing the model setup, e.g. cmf.lumped.examples.mode1
+        :param homedir: The directory where the documentation should be created. If None, a directory named <setup.name>-docs is created in the current working directory.
+        :type homedir: Path
+        :param kwargs: Addtional keyword arguments, used to alter the conf.py file, e.g. to set the project name or version. These are passed as a dict to the conf.py file and can be used there as needed.
+        """
         self.setup = setup
         self.homedir = homedir or Path(f'{name(self.setup)}-docs')
         self.homedir.mkdir(parents=True, exist_ok=True)
+        self.conf_kwargs = {
+            'project': self.setup.name,
+            'copyright': f'{self.setup.name} contributors', 
+            'author': f'{self.setup.name} contributors',
+            'version': '0.1',
+            'full_version': '0.1',
+            **kwargs
+            }
+        
 
     def copy_figures(self, text):
         figures = re.findall(r'\.\. figure:: (.*)', text)
